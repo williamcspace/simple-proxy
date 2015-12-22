@@ -4,8 +4,7 @@
 const http = require('http');
 
 const VERSION = 'v0.1.0';
-const HELP_TEXT = `Simple Http Proxy ${VERSION}`;
-const args = process.argv.slice(2);
+const APP_INFO = `Simple Http Proxy ${VERSION}`;
 const PORT = 8000;
 
 const server = http.createServer((req, res) => {
@@ -31,8 +30,8 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(HELP_TEXT);
-  console.log('Proxy server listening at ' + server.address().address + ':' + server.address().port);
+  console.log(APP_INFO);
+  console.log('Proxy server listening at %s:%d',server.address().address, server.address().port);
 });
 
 server.on('error', (err) => process.stdout.on('drain', () => process.exit(1)));
