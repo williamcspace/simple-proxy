@@ -1,6 +1,38 @@
 #!/usr/bin/env node
 'use strict';
 
-const config = require('../config.json');
+const http = require('http');
 
-require('../app/server').start(config);
+const VERSION = 'v0.1.0';
+const HELP_TEXT = `Simple Http Proxy ${VERSION}`;
+const args = process.argv.slice(2);
+const PORT = 8000;
+
+const server = http.createServer((req, res) => {
+  console.log(req.method + ' ' + req.url);
+
+  const proxy = http.request({
+    hostname: req.headers['host'],
+    path: req.url,
+    method: req.method,
+    headers: req.headers
+  });
+
+  proxy.on('response', (pRes) => {
+    pRes.on('data', (chunk) =>  res.write(chunk, 'binary'));
+    pRes.on('end', () => res.end());
+    res.writeHead(pRes.statusCode, pRes.headers);
+  });
+
+  proxy.on('error', (err) => console.log(err));
+
+  req.on('data', (chunk) => proxy.write(chunk, 'binary'));
+  req.on('end', () => proxy.end());
+});
+
+server.listen(PORT, () => {
+  console.log(HELP_TEXT);
+  console.log('Proxy server listening at ' + server.address().address + ':' + server.address().port);
+});
+
+server.on('error', (err) => process.stdout.on('drain', () => process.exit(1)));
