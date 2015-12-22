@@ -1,27 +1,29 @@
 'use strict';
 
-const net = require('net');
-const fs = require('fs');
-const path = require('path');
-const _ = require('lodash');
-const inet = require('./inet');
-const util = require('util');
 const http = require('http');
-const httpProxy = require('http-proxy');
 
-const main = (config) => {
+const start = (config) => {
+  const port = config.server_port;
 
-  const server = net.createServer().listen(8000, '127.0.0.1');
-  server.on('connection', (connection) => {
-    connection.on('data', function (data) {
-      const remote = net.connect(connection.remotePort, connection.remoteAddress, () =>{
-        remote.write(data);
-      });
-      remote.on('data', (data) => {
-        connection.write(data);
-      })
-    })
-  })
+  http.createServer((req, res) => {
+    const proxy = http.request({
+      hostname: req.headers['host'],
+      path: req.url,
+      method: req.method,
+      headers: req.headers
+    });
+
+    proxy.on('response', (pRes) => {
+      pRes.on('data', (chunk) =>  res.write(chunk, 'binary'));
+      pRes.on('end', () => res.end());
+      res.writeHead(pRes.statusCode, pRes.headers);
+    });
+
+    proxy.on('error', (err) => console.log(err));
+
+    req.on('data', (chunk) => proxy.write(chunk, 'binary'));
+    req.on('end', () => proxy.end());
+  }).listen(port);
 };
 
-exports.main = main;
+exports.start = start;

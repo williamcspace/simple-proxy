@@ -17,6 +17,5 @@
   },
   "homepage": "https://github.com/williamcspace/simple-proxy#readme",
   "dependencies": {
-    "http-proxy": "^1.12.0"
   }
 }

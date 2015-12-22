@@ -3,4 +3,4 @@
 
 const config = require('../config.json');
 
-require('../app/server').main(config);
+require('../app/server').start(config);
